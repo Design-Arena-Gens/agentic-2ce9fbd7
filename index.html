@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Racing - Learn Math While You Drive!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #score-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 18px;
+            pointer-events: auto;
+        }
+
+        .stat {
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        #question-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            pointer-events: auto;
+            min-width: 400px;
+            border: 3px solid #4CAF50;
+        }
+
+        #question {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .answer-btn:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+
+        .answer-btn.correct {
+            background: #4CAF50;
+            animation: correctPulse 0.5s;
+        }
+
+        .answer-btn.wrong {
+            background: #f44336;
+            animation: wrongShake 0.5s;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            pointer-events: auto;
+            border: 3px solid #4CAF50;
+        }
+
+        #start-screen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        #start-screen p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+
+        #start-btn {
+            padding: 20px 50px;
+            font-size: 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #start-btn:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #feedback.show {
+            opacity: 1;
+        }
+
+        #feedback.correct {
+            color: #4CAF50;
+        }
+
+        #feedback.wrong {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <div id="ui-overlay">
+        <div id="start-screen">
+            <h1>🏎️ Math Racing 🏎️</h1>
+            <p>Drive through the track and answer math questions to boost your speed!</p>
+            <p>Use Arrow Keys or WASD to drive</p>
+            <button id="start-btn">Start Game</button>
+        </div>
+
+        <div id="score-panel" class="hidden">
+            <div class="stat"><span class="stat-label">Score:</span> <span id="score">0</span></div>
+            <div class="stat"><span class="stat-label">Speed:</span> <span id="speed">0</span> km/h</div>
+            <div class="stat"><span class="stat-label">Correct:</span> <span id="correct">0</span></div>
+            <div class="stat"><span class="stat-label">Wrong:</span> <span id="wrong">0</span></div>
+        </div>
+
+        <div id="question-panel" class="hidden">
+            <div id="question"></div>
+            <button class="answer-btn" data-index="0"></button>
+            <button class="answer-btn" data-index="1"></button>
+            <button class="answer-btn" data-index="2"></button>
+            <button class="answer-btn" data-index="3"></button>
+        </div>
+
+        <div id="controls" class="hidden">
+            Arrow Keys / WASD to drive | Answer questions to boost speed!
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
